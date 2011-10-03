@@ -13,131 +13,119 @@ bool iswhitespace(char c)
 
 using namespace std;
 
-bool tokenize(const string& json, vector<Token>& tokenlist, string& error_message)
+bool tokenize(istream& json, vector<Token>& tokenlist, string& error_message)
 {
-    int idx = 0;
-    while(json[idx])
+    char c;
+    while(json.good())
     {
+        json.get(c);
         // Skip whitespace
-        while(iswhitespace(json[idx]))
-        {
-            //cout << "skipping whitespace " << json[idx] << endl;
-            ++idx;
-        }
+        json >> ws;
 
         Token t;
-        if(json[idx] == '[')
+        if(c == '[')
         {
             t.type = TOKEN_ARRAY_START;
             //cout << "TOKEN_ARRAY_START appended" << endl;
             tokenlist.push_back(t);
-            ++idx;
             continue;
         }
-        if(json[idx] == ']')
+        if(c == ']')
         {
             t.type = TOKEN_ARRAY_END;
             //cout << "TOKEN_ARRAY_END appended" << endl;
             tokenlist.push_back(t);
-            ++idx;
             continue;
         }
-        if(json[idx] == '{')
+        if(c == '{')
         {
             t.type = TOKEN_OBJECT_START;
             //cout << "TOKEN_OBJECT_START appended " << endl;
             tokenlist.push_back(t);
-            ++idx;
             continue;
         }
-        if(json[idx] == '}')
+        if(c == '}')
         {
             t.type = TOKEN_OBJECT_END;
             //cout << "TOKEN_OBJECT_END appended" << endl;
             tokenlist.push_back(t);
-            ++idx;
             continue;
         }
-        if(json[idx] == ':')
+        if(c == ':')
         {
             t.type = TOKEN_COLON;
             //cout << "TOKEN_COLON appended" << endl;
             tokenlist.push_back(t);
-            ++idx;
             continue;
         }
-        if(json[idx] == ',')
+        if(c == ',')
         {
             t.type = TOKEN_COMMA;
             //cout << "TOKEN_COMMA appended" << endl;
             tokenlist.push_back(t);
-            ++idx;
             continue;
         }
 
         // Look for string
-        if(json[idx] == '"')
+        if(c == '"')
         {
             // TODO: Look for escaped quotes
-            int end_string = json.find('"', idx+1);
-            if(end_string == -1)
-            {
-                error_message = "No end quotation mark found";
-                return false;
-            }
+            ostringstream oss;
+            do {
+                json.get(c);
+                if(c == '"')
+                    break;
+                if(!json.good())
+                    return false;
+                oss << c;
+            } while(json.good());
+            
             t.type = TOKEN_STRING;
-            t.str = json.substr(idx+1, end_string-idx-1);
+            t.str = oss.str();
             //cout << "TOKEN_STRING appended: " << t.str << endl;
             tokenlist.push_back(t);
-            idx = end_string + 1;
             continue;
         }
 
         // Look for number
-        if(isdigit(json[idx]))
+        if(isdigit(c))
         {
-            int num_end_idx = idx+1;
-            bool is_double = false;
-            while(isdigit(json[num_end_idx]) || json[num_end_idx] == '.')
+            json.unget();
+            int number;
+            if((json >> number).good())
             {
-                if(json[num_end_idx] == '.')
-                    is_double = true;
-                ++num_end_idx;
-            }
-            if(is_double)
-            {
-                //cout << json.substr(idx, num_end_idx-idx) << endl;
-                t.type = TOKEN_REAL;
-                t.real = atof(json.substr(idx, num_end_idx-idx).c_str());
+                //cout << "Found number: " << number << endl;
+                t.type = TOKEN_NUMBER;
+                t.number = number;
+                tokenlist.push_back(t);
+                continue;
             }
             else
             {
-                //cout << json.substr(idx, num_end_idx-idx) << endl;
-                t.type = TOKEN_NUMBER;
-                t.real = atoi(json.substr(idx, num_end_idx-idx).c_str());
+                cout << "Fail reading to int" << endl;
+                return false;
             }
-            //cout << "NUMBER appended: " << endl;
-            tokenlist.push_back(t);
-            idx = num_end_idx+1;
-            continue;
-            
-            
         }
-        error_message = "Unknown token" + json[idx];
-        return false;
+        //error_message = "Unknown token";
+        //return false;
     }
     return true;
 }
 
-Node* parse(const string& json, string& error_message)
+Node* parse(istream& json_stream, string& error_message)
 {
     vector<Token> tokenlist;
-    if(!tokenize(json, tokenlist, error_message))
+    if(!tokenize(json_stream, tokenlist, error_message))
     {
         return false;
     }
     if(tokenlist.size() == 0)
         return false;
+    for(int i=0;i<tokenlist.size();++i)
+    {
+        print_token(tokenlist[i]);
+    }
+    //return 0;
 
     Node* n = new Node();
     int idx = 0;
@@ -245,6 +233,7 @@ void dump(Node* node, int level)
 {
     if(node->type == OBJECT)
     {
+        cout << endl;
         indent(level);
         cout << "{" << endl;
         map<string, Node*>::iterator it;
@@ -253,16 +242,16 @@ void dump(Node* node, int level)
         {
             if(!first)
             {
-                cout << ", ";
+                cout << ", "<<endl;
             }
             indent(level+1);
-            cout << "\"" << it->first << "\":" << endl;
-            indent(level);
+            cout << "\"" << it->first << "\":";
             dump(it->second, level+2);
             first = false;
         }
+        cout << endl;
         indent(level);
-        cout << "}" << endl;
+        cout << "}";
     }
     if(node->type == ARRAY)
     {
@@ -276,7 +265,6 @@ void dump(Node* node, int level)
             dump(node->m_array[i], level+2);
             if(i != node->m_array.size() - 1)
                 cout << ", ";
-            cout << endl;
         }
         indent(level);
         cout << "]" << endl;
@@ -294,4 +282,27 @@ void dump(Node* node, int level)
         cout << node->real;
     }
 
+}
+
+void print_token(const Token& t)
+{
+    if(t.type == TOKEN_OBJECT_START ) cout << "{" ;
+    if(t.type == TOKEN_OBJECT_END ) cout << "}" ;
+    if(t.type == TOKEN_ARRAY_START ) cout << "[";
+    if(t.type == TOKEN_ARRAY_END ) cout << "]" ;
+    if(t.type == TOKEN_STRING ) cout << "\"" << t.str << "\"";
+    if(t.type == TOKEN_NUMBER ) cout << t.number;
+    if(t.type == TOKEN_REAL ) cout << "TOKEN_REAL";
+    if(t.type == TOKEN_COMMA ) cout << ", ";
+    if(t.type == TOKEN_COLON) cout << ": ";
+     return;
+    if(t.type == TOKEN_OBJECT_START ) cout << "TOKEN_OBJECT_START" << endl;
+    if(t.type == TOKEN_OBJECT_END ) cout << "TOKEN_OBJECT_END" << endl;
+    if(t.type == TOKEN_ARRAY_START ) cout << "TOKEN_ARRAY_START" << endl;
+    if(t.type == TOKEN_ARRAY_END ) cout << "TOKEN_ARRAY_END" << endl;
+    if(t.type == TOKEN_STRING ) cout << "TOKEN_STRING" << endl;
+    if(t.type == TOKEN_NUMBER ) cout << "TOKEN_NUMBER" << endl;
+    if(t.type == TOKEN_REAL ) cout << "TOKEN_REAL" << endl;
+    if(t.type == TOKEN_COMMA ) cout << "TOKEN_COMMA" << endl;
+    if(t.type == TOKEN_COLON) cout << "TOKEN_COLON" << endl;
 }

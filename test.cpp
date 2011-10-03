@@ -15,11 +15,12 @@ int main(int argc, char** argv)
         cout << "Bad file" << endl;
         return 1;
     }
-    string data;
-    ifs >> data;
-    cout << data << endl;
+    ifs.seekg(0, ios::end);
+    //cout << "length: " << ifs.tellg() << endl;
+    ifs.seekg(0, ios::beg);
     string error;
-    Node* n = parse("{\"a\": [1.34,\"2\",\"3\",\"4\"]}", error);
-    dump(n);
+    //parse(ifs, error);
+    dump(parse(ifs, error));
+
     return 0;
 }

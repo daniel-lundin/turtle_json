@@ -10,6 +10,7 @@ class Node;
 
 using std::string;
 using std::vector;
+using std::istream;
 
 enum TokenType { TOKEN_OBJECT_START, 
                  TOKEN_OBJECT_END, 
@@ -32,9 +33,11 @@ static Node* parse_structure(const vector<Token>&, int& index);
 static Node* parse_array(const vector<Token>&, int& index);
 static Node* parse_object(const vector<Token>&, int& index);
 
-static bool tokenize(const string& jsonstream, vector<Token>& tokenlist, string& error_message);
-Node* parse(const string& json, string& error_message);
+
+static bool tokenize(istream& json_stream, vector<Token>& tokenlist, string& error_message);
+Node* parse(istream& json_stream, string& error_message);
 void dump(Node*, int level=0);
+void print_token(const Token&);
 
 
 #endif
