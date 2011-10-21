@@ -1,7 +1,8 @@
 OBJS = jsonnode.o parser.o
+CFLAGS = -Wall -pedantic -O2 -ggdb
 
 test: $(OBJS) test.cpp
-	g++ $(OBJS) test.cpp -o test.o
+	g++ $(OBJS) $(CFLAGS) test.cpp -o test.o
 
 tags:
 	ctags -R --sort=1 --c++-kinds=+p --fields=+iaS --extra=+q --language-force=C++ -f cpp cpp_src

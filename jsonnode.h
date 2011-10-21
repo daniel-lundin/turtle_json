@@ -7,13 +7,9 @@
 #include <map>
 #include <vector>
 
-enum NodeType { STRING, REAL, INTEGER, ARRAY, OBJECT };
+enum NodeType { STRING, REAL, INTEGER, BOOLEAN, NIL, ARRAY, OBJECT };
 
-class Node {
-public:
-    ~Node();
-
-    Node* parse(const std::string& jsonstring);
+struct Node {
 
     std::map<std::string, Node*> m_dict;
     std::vector<Node*> m_array;
@@ -21,6 +17,7 @@ public:
     std::string str;
     int integer;
     float real;
+    bool boolean;
 
     NodeType type;
 };

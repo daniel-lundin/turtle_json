@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 // Forward declarations
 class Node;
@@ -11,6 +12,21 @@ class Node;
 using std::string;
 using std::vector;
 using std::istream;
+using std::ostream;
+using std::runtime_error;
+using std::streampos;
+
+class tokenize_exception : public runtime_error {
+public:
+    tokenize_exception(const char* what, streampos pos) : runtime_error(what), pos(pos) {}
+    streampos pos;
+};
+
+class parse_exception : public runtime_error {
+public:
+    parse_exception(const char* what, streampos pos) : runtime_error(what), pos(pos) {}
+    streampos pos;
+};
 
 enum TokenType { TOKEN_OBJECT_START, 
                  TOKEN_OBJECT_END, 
@@ -19,6 +35,8 @@ enum TokenType { TOKEN_OBJECT_START,
                  TOKEN_STRING, 
                  TOKEN_NUMBER, 
                  TOKEN_REAL, 
+                 TOKEN_BOOLEAN, 
+                 TOKEN_NULL, 
                  TOKEN_COMMA, 
                  TOKEN_COLON };
 struct Token
@@ -27,16 +45,14 @@ struct Token
     std::string str;
     int number;
     double real;
+    bool boolean;
+    streampos pos;
 };
 
-static Node* parse_structure(const vector<Token>&, int& index);
-static Node* parse_array(const vector<Token>&, int& index);
-static Node* parse_object(const vector<Token>&, int& index);
 
 
-static bool tokenize(istream& json_stream, vector<Token>& tokenlist, string& error_message);
-Node* parse(istream& json_stream, string& error_message);
-void dump(Node*, int level=0);
+Node* parse(istream& json_stream);
+void dump(Node*, ostream& os, int level=0);
 void print_token(const Token&);
 
 
