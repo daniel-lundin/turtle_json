@@ -9,10 +9,11 @@
 
 enum NodeType { STRING, REAL, INTEGER, BOOLEAN, NIL, ARRAY, OBJECT };
 
-struct Node {
-
-    std::map<std::string, Node*> m_dict;
-    std::vector<Node*> m_array;
+class JsonNode {
+public:
+    ~JsonNode();
+    std::map<std::string, JsonNode*> m_dict;
+    std::vector<JsonNode*> m_array;
 
     std::string str;
     int integer;
@@ -20,6 +21,18 @@ struct Node {
     bool boolean;
 
     NodeType type;
-};
 
+    // Helper functions to create Nodes
+    static JsonNode* string_node(const char* str);
+    static JsonNode* real_node(double real);
+    static JsonNode* integer_node(int integer);
+    static JsonNode* array_node();
+    static JsonNode* object_node();
+private:
+    // Only allow creating through static members
+    JsonNode() {}
+    // No copy
+    JsonNode(const JsonNode&);
+    JsonNode& operator=(const JsonNode&);
+};
 #endif

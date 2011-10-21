@@ -6,9 +6,9 @@
 
 #include "jsonnode.h"
 
-static Node* parse_structure(const vector<Token>&, int& index);
-static Node* parse_array(const vector<Token>&, int& index);
-static Node* parse_object(const vector<Token>&, int& index);
+static JsonNode* parse_structure(const vector<Token>&, int& index);
+static JsonNode* parse_array(const vector<Token>&, int& index);
+static JsonNode* parse_object(const vector<Token>&, int& index);
 
 using namespace std;
 
@@ -159,7 +159,7 @@ void tokenize(istream& json, vector<Token>& tokenlist)
     }
 }
 
-Node* parse(istream& json_stream)
+JsonNode* parse(istream& json_stream)
 {
     vector<Token> tokenlist;
     tokenize(json_stream, tokenlist);
@@ -167,13 +167,13 @@ Node* parse(istream& json_stream)
     if(tokenlist.size() == 0)
         return 0;
 
-    Node* n = new Node();
+    JsonNode* n = new JsonNode();
     int idx = 0;
     return parse_structure(tokenlist, idx);
 }
 
 static
-Node* parse_structure(const vector<Token>& tokenlist, int& index)
+JsonNode* parse_structure(const vector<Token>& tokenlist, int& index)
 {
     if(tokenlist[index].type == TOKEN_ARRAY_START)
     {
@@ -185,7 +185,7 @@ Node* parse_structure(const vector<Token>& tokenlist, int& index)
         return parse_object(tokenlist, index);
     }
 
-    Node* n = new Node();
+    JsonNode* n = new JsonNode();
     if(tokenlist[index].type == TOKEN_STRING)
     {
         n->type = STRING;
@@ -221,9 +221,9 @@ Node* parse_structure(const vector<Token>& tokenlist, int& index)
     throw std::runtime_error("Unknown type");
 }
 
-Node* parse_object(const vector<Token>& tokenlist, int& index)
+JsonNode* parse_object(const vector<Token>& tokenlist, int& index)
 {
-    Node* objectNode = new Node();
+    JsonNode* objectNode = new JsonNode();
     objectNode->type = OBJECT;
     if(tokenlist[index].type != TOKEN_OBJECT_START)
     {
@@ -248,9 +248,9 @@ Node* parse_object(const vector<Token>& tokenlist, int& index)
     return objectNode;
 }
 
-Node* parse_array(const vector<Token>& tokenlist, int& index)
+JsonNode* parse_array(const vector<Token>& tokenlist, int& index)
 {
-    Node* arrayNode = new Node();
+    JsonNode* arrayNode = new JsonNode();
     arrayNode->type = ARRAY;
     if(tokenlist[index].type != TOKEN_ARRAY_START)
     {
@@ -277,66 +277,66 @@ void indent(ostream& os, int level)
     }
 }
 
-void dump(Node* node, ostream& os, int level)
+void dump(JsonNode* node, ostream& os, int level)
 {
     if(node->type == OBJECT)
     {
         //cout << endl;
         //indent(os, level);
-        cout << "{" << endl;
-        map<string, Node*>::iterator it;
+        os << "{" << endl;
+        map<string, JsonNode*>::iterator it;
         bool first = true;
         for(it=node->m_dict.begin();it!=node->m_dict.end();++it)
         {
             if(!first)
             {
-                cout << ", "<<endl;
+                os << ", "<<endl;
             }
             indent(os, level+1);
-            cout << "\"" << it->first << "\": ";
+            os << "\"" << it->first << "\": ";
             dump(it->second, os, level+1);
             first = false;
         }
-        cout << endl;
+        os << endl;
         indent(os, level);
-        cout << "}";
+        os << "}";
     }
     if(node->type == ARRAY)
     {
         indent(os, level);
-        cout << "[" << endl;
-        vector<Node*>::iterator it;
+        os << "[" << endl;
+        vector<JsonNode*>::iterator it;
 
         for(int i=0;i<node->m_array.size();++i)
         {
             indent(os, level+1);
             dump(node->m_array[i], os, level+1);
             if(i != node->m_array.size() - 1)
-                cout << ", " << endl;
+                os << ", " << endl;
         }
-        cout << endl;
+        os << endl;
         indent(os, level);
-        cout << "]" << endl;
+        os << "]" << endl;
     }
     if(node->type == STRING)
     {
-        cout << "\"" << node->str << "\"";
+        os << "\"" << node->str << "\"";
     }
     if(node->type == INTEGER)
     {
-        cout << node->integer;
+        os << node->integer;
     }
     if(node->type == REAL)
     {
-        cout << node->real;
+        os << node->real;
     }
     if(node->type == BOOLEAN)
     {
-        cout << (node->boolean ? "true" : "false");
+        os << (node->boolean ? "true" : "false");
     }
     if(node->type == NIL)
     {
-        cout << "null";
+        os << "null";
     }
 }
 

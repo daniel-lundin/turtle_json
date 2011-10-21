@@ -7,7 +7,7 @@
 #include <stdexcept>
 
 // Forward declarations
-class Node;
+class JsonNode;
 
 using std::string;
 using std::vector;
@@ -51,8 +51,8 @@ struct Token
 
 
 
-Node* parse(istream& json_stream);
-void dump(Node*, ostream& os, int level=0);
+JsonNode* parse(istream& json_stream);
+void dump(JsonNode*, ostream& os, int level=0);
 void print_token(const Token&);
 
 
