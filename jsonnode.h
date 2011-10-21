@@ -26,6 +26,8 @@ public:
     static JsonNode* string_node(const char* str);
     static JsonNode* real_node(double real);
     static JsonNode* integer_node(int integer);
+    static JsonNode* boolean_node(bool value);
+    static JsonNode* null_node();
     static JsonNode* array_node();
     static JsonNode* object_node();
 private:

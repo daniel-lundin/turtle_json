@@ -167,7 +167,6 @@ JsonNode* parse(istream& json_stream)
     if(tokenlist.size() == 0)
         return 0;
 
-    JsonNode* n = new JsonNode();
     int idx = 0;
     return parse_structure(tokenlist, idx);
 }
@@ -185,37 +184,27 @@ JsonNode* parse_structure(const vector<Token>& tokenlist, int& index)
         return parse_object(tokenlist, index);
     }
 
-    JsonNode* n = new JsonNode();
     if(tokenlist[index].type == TOKEN_STRING)
     {
-        n->type = STRING;
-        n->str = tokenlist[index].str;
-        return n;
+        return JsonNode::string_node(tokenlist[index].str.c_str());
     }
 
     if(tokenlist[index].type == TOKEN_NUMBER)
     {
-        n->type = INTEGER;
-        n->integer = tokenlist[index].number;
-        return n;
+        return JsonNode::integer_node(tokenlist[index].number);
     }
 
     if(tokenlist[index].type == TOKEN_REAL)
     {
-        n->type = REAL;
-        n->real = tokenlist[index].real;
-        return n;
+        return JsonNode::real_node(tokenlist[index].real);
     }
     if(tokenlist[index].type == TOKEN_BOOLEAN)
     {
-        n->type = BOOLEAN;
-        n->boolean = tokenlist[index].boolean;
-        return n;
+        return JsonNode::boolean_node(tokenlist[index].boolean);
     }
     if(tokenlist[index].type == TOKEN_NULL)
     {
-        n->type = NIL;
-        return n;
+        return JsonNode::null_node();
     }
 
     throw std::runtime_error("Unknown type");
@@ -223,8 +212,7 @@ JsonNode* parse_structure(const vector<Token>& tokenlist, int& index)
 
 JsonNode* parse_object(const vector<Token>& tokenlist, int& index)
 {
-    JsonNode* objectNode = new JsonNode();
-    objectNode->type = OBJECT;
+    JsonNode* objectNode = JsonNode::object_node();
     if(tokenlist[index].type != TOKEN_OBJECT_START)
     {
         throw std::runtime_error("No { a start of dictionary");
@@ -250,8 +238,7 @@ JsonNode* parse_object(const vector<Token>& tokenlist, int& index)
 
 JsonNode* parse_array(const vector<Token>& tokenlist, int& index)
 {
-    JsonNode* arrayNode = new JsonNode();
-    arrayNode->type = ARRAY;
+    JsonNode* arrayNode = JsonNode::array_node();
     if(tokenlist[index].type != TOKEN_ARRAY_START)
     {
         throw std::runtime_error("no [ at beginning of array");

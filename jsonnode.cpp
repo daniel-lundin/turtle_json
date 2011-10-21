@@ -46,6 +46,21 @@ JsonNode* JsonNode::integer_node(int integer)
     return n;
 }
 
+JsonNode* JsonNode::boolean_node(bool value)
+{
+    JsonNode* n = new JsonNode;
+    n->type = BOOLEAN;
+    n->boolean = value;
+    return n;
+}
+
+JsonNode* JsonNode::null_node()
+{
+    JsonNode* n = new JsonNode;
+    n->type = NIL;
+    return n;
+}
+
 JsonNode* JsonNode::array_node()
 {
     JsonNode* n = new JsonNode;

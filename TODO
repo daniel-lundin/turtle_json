@@ -1,2 +1,4 @@
-null, false, true
-real floating numbers
+TODOs:
+ - Handle escaped quotes in string literals
+ - Handle encodings
+ - Who deletes memory when exception is thrown during tokenize/parse? use auto_ptr<>?

@@ -21,7 +21,8 @@ void print_from_stream(ifstream& is, streampos at)
 void read_and_dump() 
 {
 
-    ifstream ifs("data.json");
+    cout << "--- Parsing and dumping jsonfiles/ex1.json ---" << endl;
+    ifstream ifs("jsonfiles/ex1.json");
     if(!ifs)
     {
         cout << "Bad file" << endl;
@@ -59,10 +60,12 @@ void read_and_dump()
         cout << e.what() << endl;
         return;
     }
+    cout << endl << "--- Done ---" << endl;
 }
 
 void serialize_list()
 {
+    cout << "--- Creating json-structure and dumping to testout.json ---" << endl;
     JsonNode* root = JsonNode::array_node();
     
     root->m_array.push_back(JsonNode::string_node("First"));
@@ -70,19 +73,20 @@ void serialize_list()
     root->m_array.push_back(JsonNode::string_node("Third"));
     
     JsonNode* obj = JsonNode::object_node();
-    obj->m_dict["Ett"] = JsonNode::integer_node(1);
-    obj->m_dict["Tva"] = JsonNode::integer_node(2);
-    obj->m_dict["Tre"] = JsonNode::integer_node(3);
+    obj->m_dict["One"] = JsonNode::integer_node(1);
+    obj->m_dict["Two"] = JsonNode::integer_node(2);
+    obj->m_dict["Three"] = JsonNode::integer_node(3);
 
     root->m_array.push_back(obj);
 
-    ofstream ofs("out.json");
+    ofstream ofs("testout.json");
     if(!ofs.good())
     {
         cout << "Unable to open out.json" << endl;
         return;
     }
     dump(root, ofs);
+    cout << endl << "--- Done ---" << endl;
 }
 
 int main(int argc, char** argv) 
