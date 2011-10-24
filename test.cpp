@@ -20,7 +20,6 @@ void print_from_stream(ifstream& is, streampos at)
 }
 void read_and_dump() 
 {
-
     cout << "--- Parsing and dumping jsonfiles/ex1.json ---" << endl;
     ifstream ifs("jsonfiles/ex1.json");
     if(!ifs)
@@ -63,7 +62,7 @@ void read_and_dump()
     cout << endl << "--- Done ---" << endl;
 }
 
-void serialize_list()
+void serialize_structure()
 {
     cout << "--- Creating json-structure and dumping to testout.json ---" << endl;
     JsonNode* root = JsonNode::array_node();
@@ -91,8 +90,8 @@ void serialize_list()
 
 int main(int argc, char** argv) 
 {
-
     read_and_dump();
-    serialize_list();
+    serialize_structure();
     return 0;
 }
+

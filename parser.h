@@ -53,7 +53,6 @@ struct Token
 
 JsonNode* parse(istream& json_stream);
 void dump(JsonNode*, ostream& os, int level=0);
-void print_token(const Token&);
 
 
 #endif

@@ -1,9 +1,9 @@
 AR = ar
 OBJS = jsonnode.o parser.o
-CFLAGS = -Wall -pedantic -O2 -ggdb
+CFLAGS = -Wall -pedantic -O2
 
 test: $(OBJS) test.cpp
-	g++ $(OBJS) $(CFLAGS) test.cpp -o test.o && ./test.o
+	g++ $(OBJS) $(CFLAGS) test.cpp -o test.o
 
 lib: $(OBJS)
 	$(AR) rc turtle_json.a $(OBJS)

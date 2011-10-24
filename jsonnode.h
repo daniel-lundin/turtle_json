@@ -1,8 +1,6 @@
 #ifndef JSON_NODE_H
 #define JSON_NODE_H
 
-#include "macros.h"
-
 #include <string>
 #include <map>
 #include <vector>

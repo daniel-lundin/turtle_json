@@ -119,17 +119,18 @@ void tokenize(istream& json, vector<Token>& tokenlist)
         // Look for string
         else if(c == '"')
         {
-            // TODO: Look for escaped quotes
             ostringstream oss;
+            char prev_c='x';
             do {
                 json.get(c);
                 if(!json.good())
                 {
                     throw tokenize_exception("error parsing string", t.pos);
                 }
-                if(c == '"')
+                if(c == '"' && prev_c != '\\')
                     break;
                 oss << c;
+                prev_c = c;
             } while(json.good());
             
             t.type = TOKEN_STRING;
@@ -327,25 +328,3 @@ void dump(JsonNode* node, ostream& os, int level)
     }
 }
 
-void print_token(const Token& t)
-{
-    if(t.type == TOKEN_OBJECT_START ) cout << "{" ;
-    if(t.type == TOKEN_OBJECT_END ) cout << "}" ;
-    if(t.type == TOKEN_ARRAY_START ) cout << "[";
-    if(t.type == TOKEN_ARRAY_END ) cout << "]" ;
-    if(t.type == TOKEN_STRING ) cout << "\"" << t.str << "\"";
-    if(t.type == TOKEN_NUMBER ) cout << t.number;
-    if(t.type == TOKEN_REAL ) cout << "TOKEN_REAL";
-    if(t.type == TOKEN_COMMA ) cout << ", ";
-    if(t.type == TOKEN_COLON) cout << ": ";
-     return;
-    if(t.type == TOKEN_OBJECT_START ) cout << "TOKEN_OBJECT_START" << endl;
-    if(t.type == TOKEN_OBJECT_END ) cout << "TOKEN_OBJECT_END" << endl;
-    if(t.type == TOKEN_ARRAY_START ) cout << "TOKEN_ARRAY_START" << endl;
-    if(t.type == TOKEN_ARRAY_END ) cout << "TOKEN_ARRAY_END" << endl;
-    if(t.type == TOKEN_STRING ) cout << "TOKEN_STRING" << endl;
-    if(t.type == TOKEN_NUMBER ) cout << "TOKEN_NUMBER" << endl;
-    if(t.type == TOKEN_REAL ) cout << "TOKEN_REAL" << endl;
-    if(t.type == TOKEN_COMMA ) cout << "TOKEN_COMMA" << endl;
-    if(t.type == TOKEN_COLON) cout << "TOKEN_COLON" << endl;
-}
