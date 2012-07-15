@@ -16,15 +16,12 @@ static JsonNode* parse_object(const vector<Token>&, int& index);
 using namespace std;
 
 static
-void tokenize(istream& json, vector<Token>& tokenlist)
-{
+void tokenize(istream& json, vector<Token>& tokenlist) {
     char c;
-    while(json.good())
-    {
+    while(json.good()) {
         json >> ws;
         json.get(c);
-        if(!json.good())
-        {
+        if(!json.good()) {
             break;
         }
         // Skip whitespace
@@ -32,102 +29,85 @@ void tokenize(istream& json, vector<Token>& tokenlist)
         Token t;
         //cout << json.tellg();
         t.pos = json.tellg();
-        if(c == '[')
-        {
+        if(c == '[') {
             t.type = TOKEN_ARRAY_START;
             tokenlist.push_back(t);
         }
-        else if(c == ']')
-        {
+        else if(c == ']') {
             t.type = TOKEN_ARRAY_END;
             tokenlist.push_back(t);
         }
-        else if(c == '{')
-        {
+        else if(c == '{') {
             t.type = TOKEN_OBJECT_START;
             tokenlist.push_back(t);
         }
-        else if(c == '}')
-        {
+        else if(c == '}') {
             t.type = TOKEN_OBJECT_END;
             tokenlist.push_back(t);
         }
-        else if(c == ':')
-        {
+        else if(c == ':') {
             t.type = TOKEN_COLON;
             tokenlist.push_back(t);
         }
-        else if(c == ',')
-        {
+        else if(c == ',') {
             t.type = TOKEN_COMMA;
             tokenlist.push_back(t);
         }
         // Look for boolean values
-        else if(c == 't')
-        {
+        else if(c == 't') {
             streampos old_pos = json.tellg();
             char a;
             bool match = json.get(a).good() && a == 'r';
             match |= json.get(a).good() && a == 'u';
             match |= json.get(a).good() && a == 'e';
-            if(match)
-            {
+            if(match) {
                 t.type = TOKEN_BOOLEAN;
                 t.boolean = true;
                 tokenlist.push_back(t);
             }
-            else
-            {
+            else {
                 json.seekg(old_pos);
             }
         }
-        else if(c == 'f')
-        {
+        else if(c == 'f') {
             int old_pos = json.tellg();
             char a;
             bool match = json.get(a).good() && a == 'a';
             match |= json.get(a).good() && a == 'l';
             match |= json.get(a).good() && a == 's';
             match |= json.get(a).good() && a == 'e';
-            if(match)
-            {
+            if(match) {
                 t.type = TOKEN_BOOLEAN;
                 t.boolean = false;
                 tokenlist.push_back(t);
             }
-            else
-            {
+            else {
                 json.seekg(old_pos);
             }
         }
-        else if(c == 'n')
-        {
+        else if(c == 'n') {
             int old_pos = json.tellg();
             char a;
             bool match = json.get(a).good() && a == 'u';
             match |= json.get(a).good() && a == 'l';
             match |= json.get(a).good() && a == 'l';
-            if(match)
-            {
+            if(match) {
                 t.type = TOKEN_NULL;
                 tokenlist.push_back(t);
             }
-            else
-            {
+            else {
                 throw tokenize_exception("Unknown token while parsing null", t.pos);
             }
 
         }
 
         // Look for string
-        else if(c == '"')
-        {
+        else if(c == '"') {
             ostringstream oss;
             char prev_c='x';
             do {
                 json.get(c);
-                if(!json.good())
-                {
+                if(!json.good()) {
                     throw tokenize_exception("error parsing string", t.pos);
                 }
                 if(c == '"' && prev_c != '\\')
@@ -143,18 +123,15 @@ void tokenize(istream& json, vector<Token>& tokenlist)
 
         // Look for number
         // TODO: Also if starts with . or contains dots
-        else if(isdigit(c))
-        {
+        else if(isdigit(c)) {
             json.unget();
             int number;
-            if((json >> number).good())
-            {
+            if((json >> number).good()) {
                 t.type = TOKEN_NUMBER;
                 t.number = number;
                 tokenlist.push_back(t);
             }
-            else
-            {
+            else {
                 throw tokenize_exception("Error converting number", t.pos);
             }
         }
@@ -166,8 +143,7 @@ void tokenize(istream& json, vector<Token>& tokenlist)
     }
 }
 
-JsonNode* parse(istream& json_stream)
-{
+JsonNode* parse(istream& json_stream) {
     vector<Token> tokenlist;
     tokenize(json_stream, tokenlist);
 
@@ -179,55 +155,46 @@ JsonNode* parse(istream& json_stream)
 }
 
 static
-JsonNode* parse_structure(const vector<Token>& tokenlist, int& index)
-{
-    if(tokenlist[index].type == TOKEN_ARRAY_START)
-    {
+JsonNode* parse_structure(const vector<Token>& tokenlist, int& index) {
+    if(tokenlist[index].type == TOKEN_ARRAY_START) {
         return parse_array(tokenlist, index);
     }
 
-    if(tokenlist[index].type == TOKEN_OBJECT_START)
-    {
+    if(tokenlist[index].type == TOKEN_OBJECT_START) {
         return parse_object(tokenlist, index);
     }
 
-    if(tokenlist[index].type == TOKEN_STRING)
-    {
+    if(tokenlist[index].type == TOKEN_STRING) {
         return JsonNode::string_node(tokenlist[index].str.c_str());
     }
 
-    if(tokenlist[index].type == TOKEN_NUMBER)
-    {
+    if(tokenlist[index].type == TOKEN_NUMBER) {
         return JsonNode::integer_node(tokenlist[index].number);
     }
 
-    if(tokenlist[index].type == TOKEN_REAL)
-    {
+    if(tokenlist[index].type == TOKEN_REAL) {
         return JsonNode::real_node(tokenlist[index].real);
     }
-    if(tokenlist[index].type == TOKEN_BOOLEAN)
-    {
+
+    if(tokenlist[index].type == TOKEN_BOOLEAN) {
         return JsonNode::boolean_node(tokenlist[index].boolean);
     }
-    if(tokenlist[index].type == TOKEN_NULL)
-    {
+
+    if(tokenlist[index].type == TOKEN_NULL) {
         return JsonNode::null_node();
     }
 
     throw std::runtime_error("Unknown type");
 }
 
-JsonNode* parse_object(const vector<Token>& tokenlist, int& index)
-{
+JsonNode* parse_object(const vector<Token>& tokenlist, int& index) {
     JsonNode* objectNode = JsonNode::object_node();
-    if(tokenlist[index].type != TOKEN_OBJECT_START)
-    {
+    if(tokenlist[index].type != TOKEN_OBJECT_START) {
         throw std::runtime_error("No { a start of dictionary");
     }
     ++index;
 
-    while(tokenlist[index].type != TOKEN_OBJECT_END)
-    {
+    while(tokenlist[index].type != TOKEN_OBJECT_END) {
         if(tokenlist[index].type != TOKEN_STRING)
             throw parse_exception("object not starting with string key", tokenlist[index].pos);
         string key = tokenlist[index].str;
@@ -243,17 +210,14 @@ JsonNode* parse_object(const vector<Token>& tokenlist, int& index)
     return objectNode;
 }
 
-JsonNode* parse_array(const vector<Token>& tokenlist, int& index)
-{
+JsonNode* parse_array(const vector<Token>& tokenlist, int& index) {
     JsonNode* arrayNode = JsonNode::array_node();
-    if(tokenlist[index].type != TOKEN_ARRAY_START)
-    {
+    if(tokenlist[index].type != TOKEN_ARRAY_START) {
         throw std::runtime_error("no [ at beginning of array");
     }
     ++index;
 
-    while(tokenlist[index].type != TOKEN_ARRAY_END)
-    {
+    while(tokenlist[index].type != TOKEN_ARRAY_END) {
         arrayNode->m_array.push_back(parse_structure(tokenlist, index));
         ++index;
         if(tokenlist[index].type == TOKEN_COMMA)
@@ -262,28 +226,22 @@ JsonNode* parse_array(const vector<Token>& tokenlist, int& index)
     return arrayNode;
 }
 
-void indent(ostream& os, int level)
-{
-    while(level > 0)
-    {
+void indent(ostream& os, int level) {
+    while(level > 0) {
         os << "    ";
         --level;
     }
 }
 
-void dump(JsonNode* node, ostream& os, int level)
-{
-    if(node->type == OBJECT)
-    {
+void dump(JsonNode* node, ostream& os, int level) {
+    if(node->type == OBJECT) {
         //cout << endl;
         //indent(os, level);
         os << "{" << endl;
         map<string, JsonNode*>::iterator it;
         bool first = true;
-        for(it=node->m_dict.begin();it!=node->m_dict.end();++it)
-        {
-            if(!first)
-            {
+        for(it=node->m_dict.begin();it!=node->m_dict.end();++it) {
+            if(!first) {
                 os << ", "<<endl;
             }
             indent(os, level+1);
@@ -295,14 +253,12 @@ void dump(JsonNode* node, ostream& os, int level)
         indent(os, level);
         os << "}";
     }
-    if(node->type == ARRAY)
-    {
+    if(node->type == ARRAY) {
         indent(os, level);
         os << "[" << endl;
         vector<JsonNode*>::iterator it;
 
-        for(int i=0;i<node->m_array.size();++i)
-        {
+        for(int i=0;i<node->m_array.size();++i) {
             indent(os, level+1);
             dump(node->m_array[i], os, level+1);
             if(i != node->m_array.size() - 1)
@@ -312,24 +268,19 @@ void dump(JsonNode* node, ostream& os, int level)
         indent(os, level);
         os << "]" << endl;
     }
-    if(node->type == STRING)
-    {
+    if(node->type == STRING) {
         os << "\"" << node->str << "\"";
     }
-    if(node->type == INTEGER)
-    {
+    if(node->type == INTEGER) {
         os << node->integer;
     }
-    if(node->type == REAL)
-    {
+    if(node->type == REAL) {
         os << node->real;
     }
-    if(node->type == BOOLEAN)
-    {
+    if(node->type == BOOLEAN) {
         os << (node->boolean ? "true" : "false");
     }
-    if(node->type == NIL)
-    {
+    if(node->type == NIL) {
         os << "null";
     }
 }

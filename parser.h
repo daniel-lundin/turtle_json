@@ -40,8 +40,7 @@ enum TokenType { TOKEN_OBJECT_START,
                  TOKEN_NULL, 
                  TOKEN_COMMA, 
                  TOKEN_COLON };
-struct Token
-{
+struct Token {
     TokenType type;
     std::string str;
     int number;
