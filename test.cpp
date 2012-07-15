@@ -8,6 +8,7 @@
 #include "parser.h"
 
 using namespace std;
+using namespace turtle_json;
 
 void print_from_stream(ifstream& is, streampos at)
 {

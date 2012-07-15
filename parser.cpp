@@ -3,8 +3,11 @@
 #include <cctype>
 #include <iostream>
 #include <stdexcept>
+#include <cstdio>
 
 #include "jsonnode.h"
+
+namespace turtle_json {
 
 static JsonNode* parse_structure(const vector<Token>&, int& index);
 static JsonNode* parse_array(const vector<Token>&, int& index);
@@ -111,7 +114,7 @@ void tokenize(istream& json, vector<Token>& tokenlist)
             }
             else
             {
-                throw tokenize_exception("Unknown token", t.pos);
+                throw tokenize_exception("Unknown token while parsing null", t.pos);
             }
 
         }
@@ -139,6 +142,7 @@ void tokenize(istream& json, vector<Token>& tokenlist)
         }
 
         // Look for number
+        // TODO: Also if starts with . or contains dots
         else if(isdigit(c))
         {
             json.unget();
@@ -155,7 +159,9 @@ void tokenize(istream& json, vector<Token>& tokenlist)
             }
         }
         else {
-            throw tokenize_exception("Unknown token", t.pos);
+            char err_msg[128];
+            sprintf(err_msg, "Unknown token %c", c);
+            throw tokenize_exception(err_msg, t.pos);
         }
     }
 }
@@ -328,3 +334,4 @@ void dump(JsonNode* node, ostream& os, int level)
     }
 }
 
+} // END NAMESPACE turtle_json

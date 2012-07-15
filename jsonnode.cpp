@@ -1,5 +1,6 @@
 #include "jsonnode.h"
 
+namespace turtle_json {
 
 JsonNode::~JsonNode()
 {
@@ -75,6 +76,5 @@ JsonNode* JsonNode::object_node()
     return n;
 }
 
-
-
+} // END NAMESPACE turtle_json
 

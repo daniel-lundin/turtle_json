@@ -1,11 +1,12 @@
-#ifndef PARSER_H
-#define PARSER_H
+#ifndef JSONPARSER_H
+#define JSONPARSER_H
 
 #include <iostream>
 #include <string>
 #include <vector>
 #include <stdexcept>
 
+namespace turtle_json {
 // Forward declarations
 class JsonNode;
 
@@ -55,4 +56,5 @@ JsonNode* parse(istream& json_stream);
 void dump(JsonNode*, ostream& os, int level=0);
 
 
+} // END NAMESPACE turtle_json
 #endif

@@ -5,6 +5,8 @@
 #include <map>
 #include <vector>
 
+namespace turtle_json {
+
 enum NodeType { STRING, REAL, INTEGER, BOOLEAN, NIL, ARRAY, OBJECT };
 
 class JsonNode {
@@ -35,4 +37,7 @@ private:
     JsonNode(const JsonNode&);
     JsonNode& operator=(const JsonNode&);
 };
+
+} // END NAMESPACE turtle_json
+
 #endif
