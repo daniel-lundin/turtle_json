@@ -10,8 +10,7 @@
 using namespace std;
 using namespace turtle_json;
 
-void print_from_stream(ifstream& is, streampos at)
-{
+void print_from_stream(ifstream& is, streampos at) {
     is.seekg(at-streampos(20), ios::beg).good();
     char data[40];
     is.read(data, 39).good(); 
@@ -19,12 +18,11 @@ void print_from_stream(ifstream& is, streampos at)
     cout << data << endl;
     cout << "                  ^" << endl;
 }
-void read_and_dump() 
-{
+
+void read_and_dump() {
     cout << "--- Parsing and dumping jsonfiles/ex1.json ---" << endl;
     ifstream ifs("jsonfiles/ex1.json");
-    if(!ifs)
-    {
+    if(!ifs) {
         cout << "Bad file" << endl;
         return;
     }
@@ -34,8 +32,7 @@ void read_and_dump()
     try {
         root = parse(ifs);
     }
-    catch(tokenize_exception& e)
-    {
+    catch(tokenize_exception& e) {
         cout << "Tokenize error at " << e.pos << ": " << e.what() << endl;
         ifs.clear(); // clear error bits
         print_from_stream(ifs, e.pos);
@@ -43,8 +40,7 @@ void read_and_dump()
         return;
     }
 
-    if(root == 0)
-    {
+    if(root == 0) {
         cout << "Root is null" << endl;
         return;
     }
@@ -52,8 +48,7 @@ void read_and_dump()
     try {
         dump(root, cout);
     }
-    catch(parse_exception& e)
-    {
+    catch(parse_exception& e) {
         cout << "Parse error: " << e.what() << endl;
         ifs.clear(); // clear error bits
         print_from_stream(ifs, e.pos);
@@ -63,8 +58,7 @@ void read_and_dump()
     cout << endl << "--- Done ---" << endl;
 }
 
-void serialize_structure()
-{
+void serialize_structure() {
     cout << "--- Creating json-structure and dumping to testout.json ---" << endl;
     JsonNode* root = JsonNode::array_node();
     
@@ -80,8 +74,7 @@ void serialize_structure()
     root->m_array.push_back(obj);
 
     ofstream ofs("testout.json");
-    if(!ofs.good())
-    {
+    if(!ofs.good()) {
         cout << "Unable to open out.json" << endl;
         return;
     }
@@ -89,10 +82,34 @@ void serialize_structure()
     cout << endl << "--- Done ---" << endl;
 }
 
-int main(int argc, char** argv) 
-{
+void number_parsing() {
+    string number_json = "[14, -313, 2.34233, -4.43]";
+    istringstream iss(number_json);
+    if(!iss) {
+        cout << "Bad stream" << endl;
+        return;
+    }
+     
+
+    JsonNode* root = 0;
+    try {
+        root = parse(iss);
+    }
+    catch(tokenize_exception& e) {
+        cout << "Tokenize error at pos " << e.pos << ": " << e.what() << endl;
+        return;
+    }
+
+    cout << "[" << root->m_array[0]->integer << ", ";
+    cout << root->m_array[1]->integer << ", ";
+    cout << root->m_array[2]->real << ", ";
+    cout << root->m_array[3]->real << "]" << endl;
+}
+
+int main(int argc, char** argv) {
     read_and_dump();
     serialize_structure();
+    number_parsing();
     return 0;
 }
 

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstdio>
+#include <cmath>
 
 #include "jsonnode.h"
 
@@ -15,19 +16,24 @@ static JsonNode* parse_object(const vector<Token>&, int& index);
 
 using namespace std;
 
+int int_pow(int a, int b) {
+    if(b == 0) return 1;
+    if(b == 1) return a;
+    return a * int_pow(a, b-1);
+}
+
 static
 void tokenize(istream& json, vector<Token>& tokenlist) {
     char c;
     while(json.good()) {
+        // Skip whitespace
         json >> ws;
         json.get(c);
         if(!json.good()) {
             break;
         }
-        // Skip whitespace
 
         Token t;
-        //cout << json.tellg();
         t.pos = json.tellg();
         if(c == '[') {
             t.type = TOKEN_ARRAY_START;
@@ -122,18 +128,44 @@ void tokenize(istream& json, vector<Token>& tokenlist) {
         }
 
         // Look for number
-        // TODO: Also if starts with . or contains dots
-        else if(isdigit(c)) {
-            json.unget();
-            int number;
-            if((json >> number).good()) {
+        // TODO: Handle floats
+        else if(isdigit(c) || c == '-') {
+            bool neggo = (c == '-');
+            if(!neggo) {
+                json.unget();
+            }
+            int int_part;
+            if(!(json >> int_part).good()) {
+                throw tokenize_exception("Error reading integer part", t.pos);
+            }
+
+            json.get(c);
+            if(c != '.') {
+                json.unget(); // Put back whatever it was
                 t.type = TOKEN_NUMBER;
-                t.number = number;
+                t.number = (!neggo ? int_part : -int_part);
                 tokenlist.push_back(t);
+                continue;
             }
-            else {
-                throw tokenize_exception("Error converting number", t.pos);
+            double frac_part;
+            streampos frac_start_pos = json.tellg();
+            if(!(json >> frac_part).good()) {
+                throw tokenize_exception("Error reading decimal part", t.pos);
             }
+
+            streampos frac_end_pos = json.tellg();
+            int frac_part_length = frac_end_pos - frac_start_pos;
+            json.get(c);
+            if(c != 'e' && c != 'E') {
+                json.unget();
+                t.type = TOKEN_REAL;
+                // round down
+                t.real = (double) int_part + (frac_part / (double) int_pow(10, frac_part_length));
+                t.real *= (neggo ? -1.0 : 1.0);
+                tokenlist.push_back(t);
+                continue;
+            }
+            throw runtime_error("Scientific notation not yet implemented");
         }
         else {
             char err_msg[128];
@@ -235,8 +267,6 @@ void indent(ostream& os, int level) {
 
 void dump(JsonNode* node, ostream& os, int level) {
     if(node->type == OBJECT) {
-        //cout << endl;
-        //indent(os, level);
         os << "{" << endl;
         map<string, JsonNode*>::iterator it;
         bool first = true;
