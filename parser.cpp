@@ -128,7 +128,6 @@ void tokenize(istream& json, vector<Token>& tokenlist) {
         }
 
         // Look for number
-        // TODO: Handle floats
         else if(isdigit(c) || c == '-') {
             bool neggo = (c == '-');
             if(!neggo) {
